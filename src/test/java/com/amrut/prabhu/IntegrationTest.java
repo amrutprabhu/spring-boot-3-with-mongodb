@@ -33,14 +33,14 @@ public class IntegrationTest {
     static GenericContainer mongoDBContainer = new GenericContainer("mongo:4.4.2")
             .withExposedPorts(27017)
             .withEnv("MONGO_INITDB_ROOT_USERNAME", "root")
-            .withEnv("MONGO_INITDB_ROOT_PASSWORD", "example");
+            .withEnv("MONGO_INITDB_ROOT_PASSWORD", "password");
 
     @DynamicPropertySource
     static void setProperties(DynamicPropertyRegistry registry) {
         registry.add("spring.data.mongodb.host", mongoDBContainer::getContainerIpAddress);
         registry.add("spring.data.mongodb.port", mongoDBContainer::getFirstMappedPort);
         registry.add("spring.data.mongodb.username", () -> "root");
-        registry.add("spring.data.mongodb.password", () -> "example");
+        registry.add("spring.data.mongodb.password", () -> "password");
     }
 
     @Autowired
@@ -54,7 +54,7 @@ public class IntegrationTest {
         product.setAttributes(Map.of("Ram", "16GB", "Hard Disk", "512GB"));
 
         ObjectMapper objectMapper = new ObjectMapper();
-        MvcResult mvcResult = mockMvc.perform(post("/product")
+        MvcResult mvcResult = mockMvc.perform(post("/products")
                         .content(objectMapper.writeValueAsBytes(product))
                         .contentType(MediaType.APPLICATION_JSON)
                 )
@@ -65,7 +65,7 @@ public class IntegrationTest {
 
         Product response = objectMapper.readValue(mvcResult.getResponse().getContentAsString(), Product.class);
 
-        mockMvc.perform(get("/product/" + response.getId())
+        mockMvc.perform(get("/products/" + response.getId())
                 )
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id", is(response.getId())))
@@ -79,13 +79,13 @@ public class IntegrationTest {
     void testFailedProductRetrieval() throws Exception {
 
 
-        mockMvc.perform(get("/product/1")
+        mockMvc.perform(get("/products/1")
                 )
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.type", is("https://github.com/amrutprabhu/spring-boot-3-with-mongodb")))
                 .andExpect(jsonPath("$.title", is("Not Found")))
                 .andExpect(jsonPath("$.detail", is("Product Not found")))
-                .andExpect(jsonPath("$.instance", is("/product/1")));
+                .andExpect(jsonPath("$.instance", is("/products/1")));
 
     }
 

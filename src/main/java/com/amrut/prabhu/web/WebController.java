@@ -18,14 +18,14 @@ public class WebController {
         this.productRepository = productRepository;
     }
 
-    @PostMapping("/product")
+    @PostMapping("/products")
     public ResponseEntity create(@RequestBody Product product) {
         product = productRepository.save(product);
         return ResponseEntity.created(URI.create("/product/" + product.getId()))
                 .body(product);
     }
 
-    @GetMapping("/product/{id}")
+    @GetMapping("/products/{id}")
     public ResponseEntity getProduct(@PathVariable("id") String id) {
         Optional<Product> productById = productRepository.findById(id);
         return productById.map(ResponseEntity::ok)
